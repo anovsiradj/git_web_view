@@ -1,25 +1,51 @@
 
-import { Viewer } from './js/Viewer.js'
+import { PHPLoader } from './js/PHPLoader.js?3'
+import { Viewer } from './js/Viewer.js?2'
 
+const view = document.querySelector('iframe')
 const form = document.querySelector('form')
 
-const viewer = new Viewer
-const loaders = {}
+const phpLoaderUrl = new URL(`${location.protocol}//${location.host}/${location.pathname}/php_loader/`)
+console.debug(phpLoaderUrl)
+
+const loaders = {
+	PHPLoader: new PHPLoader(phpLoaderUrl),
+}
 
 $(form).on('submit', function (event) {
+	let config = formToJson(this)
 	event.preventDefault()
+	localStorage.setItem('__form', JSON.stringify(config))
 
-	let data = $(this).serializeArray()
+	// console.debug(config)
 
-	localStorage.setItem('__form', JSON.stringify(data))
+	let url = new URL(config.target)
+	let loader = loaders[config.loader]
+	let viewer = new Viewer(url, loader);
+
+	console.debug(url)
+	console.debug(loader)
+	console.debug(viewer)
+
+	viewer.main(view)
 })
 
 $(function () {
 	let cache = localStorage.getItem('__form')
 	if (cache) {
-		let data = JSON.parse(cache)
-		data.forEach(item => {
-			form.elements.namedItem(item.name).value = item.value
-		})
+		let config = JSON.parse(cache)
+		// console.debug(config)
+		for (let i in config) {
+			form.elements.namedItem(i).value = config[i]
+		}
 	}
 })
+
+function formToJson(elem) {
+	let data = {}
+	let arro = $(elem).serializeArray()
+	arro.forEach(i => {
+		data[i.name] = i.value
+	})
+	return data
+}

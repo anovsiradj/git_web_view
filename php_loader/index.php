@@ -3,7 +3,7 @@
 require __DIR__ . '/fn.php';
 require __DIR__ . '/curl.php';
 
-$href = $_SERVER['QUERY_STRING'];
+$href = $_GET['target'] ?? $_SERVER['QUERY_STRING'];
 $name = md5($href);
 $file = __DIR__ . "/tmp/{$name}";
 
